@@ -17,6 +17,8 @@ DATETIME_FMT = '%Y-%m-%dT%H:%M:%SZ'
 # Despite what the schema says, there are files out
 # in the wild with fractional seconds...
 DATETIME_FMT_WITH_FRAC = '%Y-%m-%dT%H:%M:%S.%fZ'
+# More unusual format with routes from Strava
+DATETIME_FMT_ALTERNATIVE = '%Y-%m-%dT%H:%M:%S%z'
 
 COLUMN_SPEC = {
     'altitude_meters': special_columns.Altitude,
@@ -59,7 +61,10 @@ def read_and_format(file_path):
     try:
         timestamps = to_datetime(times, format=DATETIME_FMT, utc=True)
     except ValueError:  # bad format, try with fractional seconds
-        timestamps = to_datetime(times, format=DATETIME_FMT_WITH_FRAC, utc=True)
+        try:
+            timestamps = to_datetime(times, format=DATETIME_FMT_WITH_FRAC, utc=True)
+        except ValueError:
+            timestamps = to_datetime(times, format=DATETIME_FMT_ALTERNATIVE, utc=True)
 
     timeoffsets = timestamps - timestamps[0]
     data._finish_up(column_spec=COLUMN_SPEC,

@@ -10,7 +10,10 @@ from activityio._util.xml_reading import (
     gen_nodes, recursive_text_extract, sans_ns)
 
 
-DATETIME_FMT = '%Y-%m-%dT%H:%M:%S.%fZ'    # UTC, with fractional seconds
+# Activities from Strava and ridewithgps use this format
+DATETIME_FMT = '%Y-%m-%dT%H:%M:%SZ'
+# Supposedly the standard
+DATETIME_FMT_WITH_FRAC = '%Y-%m-%dT%H:%M:%S.%fZ'    # UTC, with fractional seconds
 
 COLUMN_SPEC = {
     'atemp': special_columns.Temperature,
@@ -39,6 +42,9 @@ def gen_records(file_path):
         try:
             trkpt_dict['time'] = datetime.strptime(
                 trkpt_dict['time'], DATETIME_FMT)
+        except ValueError:
+            trkpt_dict['time'] = datetime.strptime(
+                trkpt_dict['time'], DATETIME_FMT_WITH_FRAC)
         except KeyError:
             pass
 
